@@ -17,16 +17,17 @@ class IsoRouter {
 /// Http route
 class IsoRoute {
   /// If not [handler] is provided it will just print the request
-  IsoRoute({@required this.path, this.handler}) {
-    handler ??= (HttpRequest request, IsoLogger logSink) async {
-      print("Request: ${request.uri}");
-      return request.response;
-    };
+  IsoRoute({required this.path, IsoRequestHandler? handler}) {
+    this.handler = handler ??
+        (HttpRequest request, IsoLogger logSink) async {
+          print("Request: ${request.uri}");
+          return request.response;
+        };
   }
 
   /// The url path
   final String path;
 
   /// The requests handler
-  IsoRequestHandler handler;
+  late IsoRequestHandler handler;
 }

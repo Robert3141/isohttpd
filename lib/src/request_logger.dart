@@ -10,14 +10,13 @@ import 'types.dart';
 /// The requests logger
 class IsoRequestLogger {
   /// Default constructor
-  IsoRequestLogger(
-      {@required this.logChannel, this.chan, this.verbose = false});
+  IsoRequestLogger({required this.logChannel, this.chan, this.verbose = false});
 
   /// The logs stream
   final StreamController<ServerRequestLog> logChannel;
 
   /// The port to use
-  final SendPort chan;
+  final SendPort? chan;
 
   /// Verbosity
   final bool verbose;

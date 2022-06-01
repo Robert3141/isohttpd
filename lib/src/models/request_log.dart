@@ -6,15 +6,15 @@ import '../types.dart';
 class ServerRequestLog {
   /// Default constructor
   ServerRequestLog(
-      {@required this.requestUrl,
-      @required this.message,
-      @required this.statusCode,
-      @required this.logClass}) {
+      {required this.requestUrl,
+      required this.message,
+      required this.statusCode,
+      required this.logClass}) {
     time = DateTime.now().toLocal();
   }
 
   /// The time of the request
-  DateTime time;
+  late DateTime time;
 
   /// The url
   String requestUrl;
@@ -42,7 +42,6 @@ class ServerRequestLog {
       case LogMessageClass.error:
         msgClass = "[ERROR]";
         break;
-      default:
     }
     if (requestUrl == "") requestUrl = "/";
     final msg = "$date $statusCode $msgClass $requestUrl $message";

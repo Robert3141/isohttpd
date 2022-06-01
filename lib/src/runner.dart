@@ -15,9 +15,9 @@ import 'types.dart';
 class IsoHttpd {
   /// Default constructor
   IsoHttpd(
-      {@required this.host,
-      @required this.router,
-      this.apiKey,
+      {required this.host,
+      required this.router,
+      this.apiKey = "",
       this.port = 8084,
       this.textDebug = false}) {
     if (!textDebug) {
@@ -43,15 +43,15 @@ class IsoHttpd {
   final bool textDebug;
 
   /// The main iso instance
-  Iso iso;
+  Iso? iso;
 
   final _logsController = StreamController<dynamic>.broadcast();
   final _requestLogsController = StreamController<ServerRequestLog>.broadcast();
-  StreamSubscription<dynamic> _dataOutSub;
+  StreamSubscription<dynamic>? _dataOutSub;
   var _serverStartedCompleter = Completer<void>();
   final _ready = Completer<void>();
-  bool _isRunning;
-  EmoDebug _;
+  bool _isRunning = false;
+  late EmoDebug _;
 
   /// Server logs stream
   Stream<dynamic> get logs => _logsController.stream;
@@ -63,7 +63,7 @@ class IsoHttpd {
   Future<void> get onServerStarted => _serverStartedCompleter.future;
 
   /// The server is ready to use
-  Future get onReady => _ready.future;
+  Future<void> get onReady => _ready.future;
 
   /// Is the server running?
   bool get isRunning => _isRunning;
@@ -77,13 +77,15 @@ class IsoHttpd {
     IsoRouter _router;
     String _apiKey;
     bool _startServer;
-    final data = isoRunner.args[0] as Map<String, dynamic>;
+    final data = isoRunner.args![0] as Map<String, dynamic>;
     _host = data["host"] as String;
     _port = data["port"] as int;
     _router = data["router"] as IsoRouter;
     _startServer = data["start_server"] as bool;
     if (data.containsKey("api_key") == true) {
       _apiKey = data["api_key"] as String;
+    } else {
+      _apiKey = "";
     }
     /*print("ROUTER $_router");
     for (final r in _router.routes) {
@@ -107,7 +109,7 @@ class IsoHttpd {
       isoRunner.send(ServerStatus.started);
       //chan.send("RCHAN > server started");
     }
-    isoRunner.dataIn.listen((dynamic data) async {
+    isoRunner.dataIn?.listen((dynamic data) async {
       //print("R > DATA IN $data");
       final cmd = data as HttpdCommand;
       switch (cmd) {
@@ -144,13 +146,13 @@ class IsoHttpd {
   }
 
   /// Start the server command
-  void start() => iso.send(HttpdCommand.start);
+  void start() => iso?.send(HttpdCommand.start);
 
   /// Stop the server command
-  void stop() => iso.send(HttpdCommand.stop);
+  void stop() => iso?.send(HttpdCommand.stop);
 
   /// Server status command
-  void status() => iso.send(HttpdCommand.status);
+  void status() => iso?.send(HttpdCommand.status);
 
   /// Run the server in an isolate
   Future<void> run({bool startServer = true}) async {
@@ -159,7 +161,7 @@ class IsoHttpd {
     iso = Iso(_run, onDataOut: (dynamic data) => null);
 
     // logs relay
-    _dataOutSub = iso.dataOut.listen((dynamic data) {
+    _dataOutSub = iso!.dataOut.listen((dynamic data) {
       //print("DATA OUT $data / ${data.runtimeType}");
       if (data is ServerRequestLog) {
         //print("RUN > REQUEST LOG DATA $data");
@@ -195,13 +197,15 @@ class IsoHttpd {
       } else if (data is ServerState) {
         String status;
         switch (data.status) {
+          case ServerStatus.ready:
+            status = "ready";
+            break;
           case ServerStatus.started:
             status = "running";
             break;
           case ServerStatus.stopped:
             status = "not running";
             break;
-          default:
         }
         _addToLogs(_.msg("Server status: $status"));
       } else {
@@ -219,19 +223,19 @@ class IsoHttpd {
       "start_server": startServer
     };
     // run
-    await iso.run(<dynamic>[conf]);
-    await iso.onCanReceive;
+    await iso!.run(<dynamic>[conf]);
+    await iso!.onCanReceive;
   }
 
   /// Kill the server
   void kill() {
-    iso.dispose();
+    iso?.dispose();
     _dispose();
   }
 
   /// Dispose streams
   void _dispose() {
-    _dataOutSub.cancel();
+    _dataOutSub?.cancel();
     _requestLogsController.close();
     _logsController.close();
   }

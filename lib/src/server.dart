@@ -17,10 +17,10 @@ import 'types.dart';
 class IsoHttpdServer {
   /// Provide a [host] and a [router]
   IsoHttpdServer(
-      {@required this.host,
-      @required this.router,
-      @required this.chan,
-      this.apiKey,
+      {required this.host,
+      required this.router,
+      required this.chan,
+      this.apiKey = "",
       this.port = 8084,
       this.textDebug = false})
       : assert(host != null) {
@@ -53,21 +53,21 @@ class IsoHttpdServer {
   final bool textDebug;
 
   /// The logger
-  IsoLogger log;
+  late IsoLogger log;
 
   /// The requests logger
-  IsoRequestLogger requestLogger;
+  late IsoRequestLogger requestLogger;
 
-  Stream<HttpRequest> _incomingRequests;
+  Stream<HttpRequest>? _incomingRequests;
   bool _isRunning = false;
   bool _isInitialized = false;
   final _onStartedCompleter = Completer<void>();
   final _readyCompleter = Completer<void>();
   final _requestsLogChannel = StreamController<ServerRequestLog>.broadcast();
   final _logsChannel = StreamController<dynamic>.broadcast();
-  StreamSubscription _incomingRequestsSub;
-  HttpServer _server;
-  EmoDebug _;
+  StreamSubscription? _incomingRequestsSub;
+  HttpServer? _server;
+  late EmoDebug _;
 
   /// The logs stream
   Stream<dynamic> get logs => _logsChannel.stream;
@@ -142,7 +142,7 @@ class IsoHttpdServer {
       _onStartedCompleter.complete();
     }
 
-    _incomingRequestsSub = _incomingRequests.listen((request) {
+    _incomingRequestsSub = _incomingRequests!.listen((request) {
       //log.debug("REQUEST ${request.uri.path} / ${request.headers.contentType}");
       // verify authorization
       if (apiKey != null) {
@@ -172,8 +172,8 @@ class IsoHttpdServer {
         return;
       }
       // find a handler
-      IsoRequestHandler handler;
-      IsoRequestHandler defaultHandler;
+      IsoRequestHandler? handler;
+      IsoRequestHandler? defaultHandler;
       var found = false;
       for (final route in router.routes) {
         if (route.path == request.uri.path) {
@@ -210,7 +210,7 @@ class IsoHttpdServer {
   /// Stop the server
   bool stop() {
     if (_isRunning) {
-      _incomingRequestsSub.cancel();
+      _incomingRequestsSub?.cancel();
       _isRunning = false;
       return true;
     }
