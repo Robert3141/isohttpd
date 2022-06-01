@@ -1,11 +1,9 @@
 import 'dart:isolate';
 
-import 'package:meta/meta.dart';
-
 /// The logger
 class IsoLogger {
   /// Default constructor
-  IsoLogger({required this.chan}) : assert(chan != null);
+  IsoLogger({required this.chan});
 
   /// The port to use
   final SendPort chan;

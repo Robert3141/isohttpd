@@ -9,12 +9,11 @@ class ServerRequestLog {
       {required this.requestUrl,
       required this.message,
       required this.statusCode,
-      required this.logClass}) {
-    time = DateTime.now().toLocal();
-  }
+      required this.logClass})
+      : time = DateTime.now().toLocal();
 
   /// The time of the request
-  late DateTime time;
+  DateTime time;
 
   /// The url
   String requestUrl;
